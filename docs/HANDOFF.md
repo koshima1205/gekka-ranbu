@@ -5,7 +5,8 @@
 - リポジトリ: `koshima1205/gekka-ranbu`（**公開リポジトリ**。2026-09-26 に「スマブラ」を連想させる `smabra` から名前を変えた。古い URL は新しい名前へ転送される）
 - 作業ブランチ: セッションで指定されたブランチで作業して push。既定のブランチは `main`（2026-09-26 に `claude/tsukusettan-cnp-mcp-smash-yapw36` から名前を変えた）
 - ユーザーは一人で開発している。作業が終わったら PR を作り、ユーザーの了承を得てマージする
-- 遊べるページ（Artifact、非公開）: https://claude.ai/artifact/4NpJkm59K24nQvpw4CEzCu
+- Web 公開: Cloudflare Pages（2026-09-26 に準備。設定は README の「公開（Cloudflare Pages）」）。**公開するのは1ファイル版（`dist-single/`）だけ**（`dist/` は月蝕綺譚のモデルを GLB のまま別ファイルで置くので使わない）。noindex は `public/_headers` と `index.html` の `robots`
+- 遊べるページ（Artifact。2026-09-26 に「リンクを知っている全員」に公開済み）: https://claude.ai/artifact/4NpJkm59K24nQvpw4CEzCu
   - 更新するときは、先に `read` してから `url` を指定して publish（アイコンは変えない）
   - ページ本体は `npm run build:single` の `dist-single/index.html` を、下の「Artifact 用の断片の作り方」で変換したもの
 
@@ -41,7 +42,8 @@ CNP（CryptoNinja Partners）9体と、CryptoNinja 外伝「月蝕綺譚 -Luna O
 2026-09-26 に済んだこと: CNP の利用ガイドラインの確認（[GUIDELINES.md](GUIDELINES.md)）、「月下乱舞」への改名、月蝕綺譚の公式モデル（4体分の GLB）を git の履歴から消して全ブランチに強制 push（ユーザーの了承済み。コミットの ID はそれ以前と変わっている）、リポジトリ名（`smabra` → `gekka-ranbu`）と既定のブランチ名（→ `main`）の変更（新しいリポジトリへ移す案は、URL が切れる・PR のページが消えるなどの理由でやめた）。
 
 1. **GitHub 上の古いコミット**: 履歴からは消えたが、GLB を含む古いコミットは GitHub 上に残っていて、ハッシュを指定すると今も見られる。2026-09-26 にユーザーが GitHub サポートに削除を依頼した（返事待ち。消えたかを確かめるリンクはユーザーが持っている）。**古いコミットのハッシュは、このメモにもコミットメッセージにも PR にも書かない**（書くとそこからたどれてしまう）
-2. Artifact は非公開のまま（2026-09-26 に月下乱舞の版へ更新）。広く公開するかはユーザー判断
+2. **Cloudflare Pages のプロジェクト作成**（ユーザーが行う。リポジトリをつなぐだけ）。URL（`gekka-ranbu.pages.dev` の予定）が決まったら、X でリンクを貼ったときに大きな画像が出るよう OG タグ（og:image など）を入れる
+3. X での紹介（2026-09-26 に投稿文と画像を用意済み。「これからブラッシュアップしていく」と添える）
 
 ## 環境メモ
 
