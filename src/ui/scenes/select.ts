@@ -20,6 +20,8 @@ export class SelectScene implements Scene {
   private slotEls: HTMLElement[] = [];
   /** 全員が決めたら出る「いざ、勝負」ボタン（見出しの行の右端） */
   private startBtn!: HTMLButtonElement;
+  /** 1P しかいないときに「いざ、勝負」の代わりに出す案内 */
+  private startHint!: HTMLElement;
   private editing = 0;
   private stocksEl!: HTMLElement;
   private timeEl!: HTMLElement;
@@ -40,6 +42,7 @@ export class SelectScene implements Scene {
     this.timeEl = h('b', {}, this.timeLabel());
     this.grid = h('div', { class: 'grid' });
     this.startBtn = h('button', { class: 'btn primary start-btn', title: 'Enter / START でも進めます', onclick: () => this.proceed() }, 'いざ、勝負 ▶');
+    this.startHint = h('span', { class: 'start-hint' }, 'CPU か 2P を入れると始められます');
     const slots = h('div', { class: 'slots' });
     this.slotEls = app.slots.map((_, i) => {
       const el = h('div', { class: 'slot', onclick: () => this.setEditing(i) });
@@ -61,6 +64,7 @@ export class SelectScene implements Scene {
           h('span', { class: 'pill', title: 'ストック＝残りの命の数。場外にふっとばされるたびに1つ減り、0になったら負け' }, 'ストック', h('button', { onclick: () => this.stocks(-1), 'aria-label': 'ストックを減らす' }, '−'), this.stocksEl, h('button', { onclick: () => this.stocks(1), 'aria-label': 'ストックを増やす' }, '＋')),
           h('span', { class: 'pill', title: '時間切れで試合終了。「∞」なら時間の制限なし' }, '時間', h('button', { onclick: () => this.time(-1), 'aria-label': '時間を減らす' }, '−'), this.timeEl, h('button', { onclick: () => this.time(1), 'aria-label': '時間を増やす' }, '＋')),
         ),
+        this.startHint,
         this.startBtn,
       ),
       h('div', { class: 'grid-wrap' }, this.grid),
@@ -299,6 +303,10 @@ export class SelectScene implements Scene {
     const ready = this.isReady();
     this.startBtn.classList.toggle('ready', ready);
     this.startBtn.disabled = !ready;
+    // 1P が決めたのに相手がいなくて始められないときは、そのことを出す
+    const slots = this.app.slots;
+    this.startHint.hidden = ready || !slots[0].locked || slots.filter((s) => s.kind !== 'off').length >= 2;
+    this.startBtn.hidden = !this.startHint.hidden;
   }
 
   private proceed(): void {
@@ -323,6 +331,9 @@ export class SelectScene implements Scene {
           s.locked = false;
           sfx('uiBack');
           changed = true;
+        } else if (m.confirm && this.isReady()) {
+          // キャラを決めたあと、もう一度「決定」でも始められる（Enter / START を知らなくても進める）
+          this.proceed();
         }
         return;
       }

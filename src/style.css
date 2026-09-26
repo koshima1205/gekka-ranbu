@@ -796,6 +796,30 @@ kbd {
   box-shadow:
     0 4px 0 rgba(0, 0, 0, 0.45),
     0 0 18px rgba(255, 106, 61, 0.55);
+  animation:
+    start-pop 0.35s ease-out,
+    start-glow 1.6s ease-in-out 0.35s infinite;
+}
+
+@keyframes start-pop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+
+@keyframes start-glow {
+  50% {
+    box-shadow:
+      0 4px 0 rgba(0, 0, 0, 0.45),
+      0 0 30px rgba(255, 106, 61, 0.95);
+  }
+}
+
+.start-hint {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--gold-2);
 }
 
 .hint {
@@ -1137,7 +1161,8 @@ kbd {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .blink {
+  .blink,
+  .start-btn.ready {
     animation: none;
   }
 }
