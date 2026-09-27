@@ -125,6 +125,21 @@ npm run build:single  # dist-single/index.html（JS・CSS を埋め込んだ1フ
 | `src/core/` | 入力（キーボード / パッド / タッチ）、手続き生成サウンド、数学ユーティリティ |
 | `scripts/sync-roster.ts` | MCP クライアント（NINJAMCP → 名簿 JSON） |
 
+## 公開（Cloudflare Pages）
+
+Web で公開するときは **1ファイル版（`npm run build:single` → `dist-single/`）** を使います。月蝕綺譚のモデルをゲームの中に埋め込んだ形で出すためです。普通のビルドの `dist/` はモデルを GLB のまま別ファイル（`assets/oto-….glb` など）で置くので、モデルをそのまま配っている形になり、月蝕綺譚のガイドラインの「モデルそのままの再配布 NG」に触れるおそれがあります。
+
+| Cloudflare Pages の設定 | 値 |
+| --- | --- |
+| Production branch | `main` |
+| Build command | `npm run build:single` |
+| Build output directory | `dist-single` |
+
+- Node のバージョンは `.node-version`（22）で指定しています。
+- ビルドのときに月蝕綺譚のモデルを素材蔵から取ってきて、ゲームに埋め込みます（`npm run sync:kitan`）。
+- `public/_headers`（Cloudflare 用）と `index.html` の `robots` で、検索エンジンに載せない設定（noindex）にしています。検索に出したくなったら両方から消してください。
+- サイトの名前（`○○.pages.dev` やドメイン）に「CNP」を入れない、広告・投げ銭などで収益化しない（[docs/GUIDELINES.md](docs/GUIDELINES.md)）。
+
 ## クレジット・ガイドライン
 
 - 本作は**非公式・非営利のファンメイド作品**で、CNP・CryptoNinja・月蝕綺譚の公式とは関係ありません。販売・収益化はしていません。キャラクターの権利は各権利者にあります（**CNP（CryptoNinja Partners）**: © CryptoNinja Partners ／ **CryptoNinja**: © Ninja DAO）。

@@ -27,7 +27,8 @@ test('title → select → stage → battle', async ({ page }) => {
   await expect(page.locator('.ready')).toBeVisible();
   await page.screenshot({ path: 'test-results/02-select.png' });
 
-  await page.keyboard.press('Enter');
+  // キャラを決めたあと、もう一度「決定」を押すだけで始められる（Enter / START でも可）
+  await page.keyboard.press('KeyJ');
   await expect(page.getByText('ステージ選択')).toBeVisible();
   await page.waitForTimeout(300);
   await page.screenshot({ path: 'test-results/03-stage.png' });

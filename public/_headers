@@ -1,0 +1,6 @@
+# Cloudflare Pages のレスポンスヘッダー（npm run build / build:single で出力先の直下にコピーされる）
+# 検索エンジンには載せない（リンクを知っている人に遊んでもらう）
+/*
+  X-Robots-Tag: noindex, nofollow
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
