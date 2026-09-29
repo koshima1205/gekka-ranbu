@@ -4,6 +4,7 @@ import { h } from './dom';
 /** スマホ用のバーチャルパッド（スティック + ボタン） */
 export function showTouch(root: HTMLElement, onPause: () => void): void {
   root.hidden = false;
+  root.classList.remove('paused');
   root.replaceChildren();
   touchPad.active = true;
   const knob = h('div', { class: 'knob' });
@@ -65,15 +66,33 @@ export function showTouch(root: HTMLElement, onPause: () => void): void {
     btn('ガード', 'shield', 70, 120),
     btn('つかみ', 'grab', 0, 150),
   );
-  const pause = h('button', { class: 'pause-btn', onclick: onPause }, 'Ⅱ');
+  const pause = h('button', { class: 'pause-btn', onclick: onPause }, h('span', { class: 'bars', 'aria-hidden': 'true' }), 'ポーズ');
   const rotate = h('div', { class: 'rotate-hint' }, '横向きにすると遊びやすいです');
   root.append(stick, btns, pause, rotate);
 }
 
 export function hideTouch(root: HTMLElement): void {
   root.hidden = true;
+  root.classList.remove('paused');
   root.replaceChildren();
   touchPad.active = false;
+  release();
+}
+
+/**
+ * ポーズ中はスティックとボタンを隠す（縦向きだとポーズのメニューの上に重なり、
+ * 「タイトルへ」などを押してもボタンのほうが押されてしまうため）。押しっぱなしの入力も離す
+ */
+export function pauseTouch(root: HTMLElement, paused: boolean): void {
+  root.classList.toggle('paused', paused);
+  if (!paused) return;
+  release();
+  root.querySelectorAll('.tb.on').forEach((b) => b.classList.remove('on'));
+  const knob = root.querySelector<HTMLElement>('.knob');
+  if (knob) knob.style.transform = '';
+}
+
+function release(): void {
   touchPad.x = touchPad.y = 0;
   touchPad.attack = touchPad.special = touchPad.jump = touchPad.shield = touchPad.grab = false;
 }

@@ -781,9 +781,12 @@ kbd {
   text-align: center;
 }
 
-.start-btn {
-  visibility: hidden;
+.start {
+  position: relative;
   margin-left: auto;
+}
+
+.start-btn {
   padding: 7px 18px;
   font-family: var(--display);
   font-weight: 400;
@@ -791,8 +794,29 @@ kbd {
   letter-spacing: 0.12em;
 }
 
+/* 全員が決めるまでは、うすく出しておく（押すと何が足りないかを出す） */
+.start-btn:not(.ready) {
+  opacity: 0.5;
+  filter: grayscale(0.6);
+  box-shadow: none;
+}
+
+.start-btn.nudge:not(.ready) {
+  animation: start-nudge 0.4s;
+}
+
+@keyframes start-nudge {
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
 .start-btn.ready {
-  visibility: visible;
   box-shadow:
     0 4px 0 rgba(0, 0, 0, 0.45),
     0 0 18px rgba(255, 106, 61, 0.55);
@@ -817,9 +841,25 @@ kbd {
 }
 
 .start-hint {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 2;
+  padding: 6px 12px;
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  background: var(--panel-2);
   font-size: 13px;
   font-weight: 800;
   color: var(--gold-2);
+  white-space: nowrap;
+}
+
+/* 指で押しやすい大きさに */
+@media (pointer: coarse) {
+  .start-btn {
+    min-height: 44px;
+  }
 }
 
 .hint {
@@ -1069,11 +1109,31 @@ kbd {
   top: max(10px, env(safe-area-inset-top));
   right: max(12px, env(safe-area-inset-right));
   pointer-events: auto;
-  border-radius: 10px;
-  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
   background: var(--panel);
-  padding: 6px 12px;
+  font-size: 15px;
   font-weight: 800;
+}
+
+/* ポーズ中は、メニューの上に重ならないようスティックとボタンを隠す（ポーズボタンは残して、押すと続きから） */
+#touch.paused .stick,
+#touch.paused .btns,
+#touch.paused .rotate-hint {
+  visibility: hidden;
+}
+
+/* ポーズの記号（縦の2本線） */
+#touch .pause-btn .bars {
+  width: 12px;
+  height: 14px;
+  border-left: 4px solid currentColor;
+  border-right: 4px solid currentColor;
 }
 
 #touch .rotate-hint {
@@ -1162,7 +1222,8 @@ kbd {
 
 @media (prefers-reduced-motion: reduce) {
   .blink,
-  .start-btn.ready {
+  .start-btn.ready,
+  .start-btn.nudge:not(.ready) {
     animation: none;
   }
 }

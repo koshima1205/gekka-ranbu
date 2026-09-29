@@ -8,7 +8,7 @@ import { stageById } from '../../game/stage';
 import { renderBattle, type BattleView } from '../../render/battleRenderer';
 import { matchAudio, sfx, type App, type Scene } from '../app';
 import { h } from '../dom';
-import { hideTouch, showTouch } from '../touch';
+import { hideTouch, pauseTouch, showTouch } from '../touch';
 import { ResultsScene } from './results';
 import { SelectScene } from './select';
 import { TitleScene } from './title';
@@ -72,6 +72,7 @@ export class BattleScene implements Scene {
     if (this.match.phase === 'end' || this.match.phase === 'done') return;
     this.paused = !this.paused;
     sfx('pause');
+    if (this.app.touchCapable) pauseTouch(this.app.touchEl, this.paused);
     if (this.paused) {
       const items: [string, () => void][] = [
         ['つづける', () => this.togglePause()],

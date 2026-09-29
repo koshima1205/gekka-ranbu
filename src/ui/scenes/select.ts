@@ -18,10 +18,12 @@ export class SelectScene implements Scene {
   private cards: HTMLElement[] = [];
   private visible: number[] = [];
   private slotEls: HTMLElement[] = [];
-  /** 全員が決めたら出る「いざ、勝負」ボタン（見出しの行の右端） */
+  /** 「いざ、勝負」ボタン（見出しの行の右端）。最初から出しておき、全員が決めると光る */
   private startBtn!: HTMLButtonElement;
-  /** 1P しかいないときに「いざ、勝負」の代わりに出す案内 */
+  /** まだ始められないときに、ボタンの下に何が足りないかを出す */
   private startHint!: HTMLElement;
+  /** まだ始められないのに「いざ、勝負」が押された */
+  private nudged = false;
   private editing = 0;
   private stocksEl!: HTMLElement;
   private timeEl!: HTMLElement;
@@ -42,7 +44,7 @@ export class SelectScene implements Scene {
     this.timeEl = h('b', {}, this.timeLabel());
     this.grid = h('div', { class: 'grid' });
     this.startBtn = h('button', { class: 'btn primary start-btn', title: 'Enter / START でも進めます', onclick: () => this.proceed() }, 'いざ、勝負 ▶');
-    this.startHint = h('span', { class: 'start-hint' }, 'CPU か 2P を入れると始められます');
+    this.startHint = h('span', { class: 'start-hint', role: 'status' });
     const slots = h('div', { class: 'slots' });
     this.slotEls = app.slots.map((_, i) => {
       const el = h('div', { class: 'slot', onclick: () => this.setEditing(i) });
@@ -64,8 +66,7 @@ export class SelectScene implements Scene {
           h('span', { class: 'pill', title: 'ストック＝残りの命の数。場外にふっとばされるたびに1つ減り、0になったら負け' }, 'ストック', h('button', { onclick: () => this.stocks(-1), 'aria-label': 'ストックを減らす' }, '−'), this.stocksEl, h('button', { onclick: () => this.stocks(1), 'aria-label': 'ストックを増やす' }, '＋')),
           h('span', { class: 'pill', title: '時間切れで試合終了。「∞」なら時間の制限なし' }, '時間', h('button', { onclick: () => this.time(-1), 'aria-label': '時間を減らす' }, '−'), this.timeEl, h('button', { onclick: () => this.time(1), 'aria-label': '時間を増やす' }, '＋')),
         ),
-        this.startHint,
-        this.startBtn,
+        h('div', { class: 'start' }, this.startBtn, this.startHint),
       ),
       h('div', { class: 'grid-wrap' }, this.grid),
       slots,
@@ -170,13 +171,13 @@ export class SelectScene implements Scene {
     s.cursor = Math.max(0, this.visible.indexOf(idx));
     if (s.kind === 'human') s.locked = true;
     sfx('uiSelect');
-    this.refreshSlots();
-    this.refreshCursors();
     // 1P が決めたら次は CPU の編集へ
     if (this.editing === 0) {
       const next = this.app.slots.findIndex((x, i) => i > 0 && x.kind === 'cpu' && x.fighterId === null);
       if (next > 0 && this.app.touchCapable) this.editing = next;
     }
+    this.refreshSlots();
+    this.refreshCursors();
   }
 
   private hover(idx: number): void {
@@ -294,23 +295,42 @@ export class SelectScene implements Scene {
     this.refreshSlot(i);
   }
 
+  /** まだ始められない理由（始められるときは null） */
+  private waitingFor(): string | null {
+    const slots = this.app.slots;
+    const i = slots.findIndex((s) => s.kind === 'human' && !s.locked);
+    if (i === 0) return '先にキャラを選んでください';
+    if (i > 0) return `${i + 1}P がキャラを選ぶのを待っています`;
+    if (slots.filter((s) => s.kind !== 'off').length < 2) return 'CPU か 2P を入れると始められます';
+    return null;
+  }
+
   private isReady(): boolean {
-    const active = this.app.slots.filter((s) => s.kind !== 'off');
-    return active.length >= 2 && active.every((s) => s.kind === 'cpu' || s.locked);
+    return this.waitingFor() === null;
   }
 
   private refreshReady(): void {
-    const ready = this.isReady();
-    this.startBtn.classList.toggle('ready', ready);
-    this.startBtn.disabled = !ready;
-    // 1P が決めたのに相手がいなくて始められないときは、そのことを出す
+    const why = this.waitingFor();
+    this.startBtn.classList.toggle('ready', !why);
+    if (!why) this.nudged = false;
+    // 押しても始められなかったとき、または 1P が決めたのに相手がいないときは、何が足りないかを出す
     const slots = this.app.slots;
-    this.startHint.hidden = ready || !slots[0].locked || slots.filter((s) => s.kind !== 'off').length >= 2;
-    this.startBtn.hidden = !this.startHint.hidden;
+    const alone = slots[0].locked && slots.filter((s) => s.kind !== 'off').length < 2;
+    this.startHint.textContent = why ?? '';
+    this.startHint.hidden = !why || !(this.nudged || alone);
   }
 
   private proceed(): void {
-    if (!this.isReady()) return;
+    if (!this.isReady()) {
+      this.nudged = true;
+      this.refreshReady();
+      // ボタンを小さくゆらす（続けて押してもそのたびにゆれるよう、いったん外してから付け直す）
+      this.startBtn.classList.remove('nudge');
+      void this.startBtn.offsetWidth;
+      this.startBtn.classList.add('nudge');
+      sfx('uiBack');
+      return;
+    }
     sfx('uiSelect');
     this.app.go(new StageScene(this.app));
   }
@@ -322,7 +342,7 @@ export class SelectScene implements Scene {
     app.slots.forEach((s, i) => {
       if (s.kind !== 'human') return;
       const m = app.menuFor(i);
-      if (m.start && this.isReady()) {
+      if (m.start) {
         this.proceed();
         return;
       }
@@ -331,7 +351,7 @@ export class SelectScene implements Scene {
           s.locked = false;
           sfx('uiBack');
           changed = true;
-        } else if (m.confirm && this.isReady()) {
+        } else if (m.confirm) {
           // キャラを決めたあと、もう一度「決定」でも始められる（Enter / START を知らなくても進める）
           this.proceed();
         }
