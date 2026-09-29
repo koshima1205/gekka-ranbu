@@ -6,9 +6,24 @@
 - 作業ブランチ: セッションで指定されたブランチで作業して push。既定のブランチは `main`（2026-09-26 に `claude/tsukusettan-cnp-mcp-smash-yapw36` から名前を変えた）
 - ユーザーは一人で開発している。作業が終わったら PR を作り、ユーザーの了承を得てマージする
 - Web 公開: Cloudflare Pages の https://gekka-ranbu.pages.dev （2026-09-29 にユーザーがプロジェクトを作った。`main` に入ると自動で公開し直す。PR には Cloudflare がプレビューの URL をコメントする。設定は README の「公開（Cloudflare Pages）」）。**公開するのは1ファイル版（`dist-single/`）だけ**（`dist/` は月蝕綺譚のモデルを GLB のまま別ファイルで置くので使わない）。noindex は `public/_headers` と `index.html` の `robots`
-- 遊べるページ（Artifact。2026-09-26 に「リンクを知っている全員」に公開済み）: https://claude.ai/artifact/4NpJkm59K24nQvpw4CEzCu
+- 遊べるページ（Artifact。2026-09-26 に「リンクを知っている全員」に公開済み。前の Claude アカウントのもので、2026-09-29 の修正は入っていない。今の公開先は Cloudflare Pages）: https://claude.ai/artifact/4NpJkm59K24nQvpw4CEzCu
   - 更新するときは、先に `read` してから `url` を指定して publish（アイコンは変えない）
   - ページ本体は `npm run build:single` の `dist-single/index.html` を、下の「Artifact 用の断片の作り方」で変換したもの
+
+## 別の PC・別のアカウントで始めるとき
+
+2026-09-29 に、ユーザーが別の PC・別のアカウントで続けることにした。前の会話は読めないので、このメモと README がすべて。
+
+1. **GitHub**: リポジトリの持ち主は `koshima1205`。別の GitHub アカウントで作業するなら、`koshima1205` でリポジトリの Settings → Collaborators から招待し、新しいアカウントで招待を受ける。そのうえで https://claude.ai/connect-github で GitHub をつなぐ（Claude の GitHub App がリポジトリに入っていなければ、同じページから入れる）。セッションのリポジトリは、セッションを始めるときに選ぶ
+2. **ネットワーク**（Claude Code on the web の環境の設定 → Network access の許可するドメイン）
+   - 必須: `kura.vibe.co.jp`（月蝕綺譚のモデル。つながらないと月蝕綺譚のキャラが仮の形になる。ビルドは止まらない）。npm と GitHub にもつながる必要がある（`npm ci`。`ninjamcp` は GitHub から取る）
+   - あると便利: `fonts.googleapis.com`・`fonts.gstatic.com`（スクショでフォントを出す）、下の「環境メモ」にあるガイドラインのサイト
+3. **コネクタ**: 月蝕綺譚の設定資料 `kitan-lore`（`kitan-lore-mcp.nubonba.workers.dev`）を https://claude.ai/customize/connectors で足す（URL は前のアカウントのコネクタ設定からコピーする）。コネクタはセッションを始めるときに読まれる。NINJAMCP は `.mcp.json` に入っているので、`npm ci` のあとそのまま使える
+4. 新しいセッションの最初に「docs/HANDOFF.md を読んで、続きから」と頼む
+5. 手元の PC で動かすときは Node 22（`.node-version`）で `npm ci` → `npm run dev`
+
+- 変わらないもの: Cloudflare Pages（ユーザーの Cloudflare アカウント。`main` に入れば、誰がマージしても公開し直す）、GitHub サポートへの依頼（`koshima1205` のアカウントで出したもの）
+- 前のアカウントに残るもの: 遊べるページ（Artifact）。新しいアカウントからは更新できない
 
 ## ゲームの現状
 
@@ -42,10 +57,10 @@ CNP（CryptoNinja Partners）9体と、CryptoNinja 外伝「月蝕綺譚 -Luna O
 
 2026-09-26 に済んだこと: CNP の利用ガイドラインの確認（[GUIDELINES.md](GUIDELINES.md)）、「月下乱舞」への改名、月蝕綺譚の公式モデル（4体分の GLB）を git の履歴から消して全ブランチに強制 push（ユーザーの了承済み。コミットの ID はそれ以前と変わっている）、リポジトリ名（`smabra` → `gekka-ranbu`）と既定のブランチ名（→ `main`）の変更（新しいリポジトリへ移す案は、URL が切れる・PR のページが消えるなどの理由でやめた）。
 
-2026-09-29 に済んだこと: Cloudflare Pages での公開、X などにリンクを貼ったときのカード（OGP。画像は `public/og.jpg`、公開先の URL はビルド時に入る。README の「公開」）。
+2026-09-29 に済んだこと: Cloudflare Pages での公開、X などにリンクを貼ったときのカード（OGP。画像は `public/og.jpg`、公開先の URL はビルド時に入る。README の「公開」）、スマホの不具合の修正（「いざ、勝負」を最初から出す・ポーズ中はスティックとボタンを隠す・ページの拡大を止める。`e2e/phone.spec.ts`）、X での紹介（ユーザーが投稿した。「これからブラッシュアップしていく」と添えた）。
 
 1. **GitHub 上の古いコミット**: 履歴からは消えたが、GLB を含む古いコミットは GitHub 上に残っていて、ハッシュを指定すると今も見られる。2026-09-26 にユーザーが GitHub サポートに削除を依頼した（返事待ち。消えたかを確かめるリンクはユーザーが持っている）。**古いコミットのハッシュは、このメモにもコミットメッセージにも PR にも書かない**（書くとそこからたどれてしまう）
-2. X での紹介（2026-09-26 に投稿文と画像を用意済み。「これからブラッシュアップしていく」と添える。投稿はユーザーが行う。画像を付けた投稿ではリンクカードは出ないが、ほかの人がリンクを貼ったときに出る）
+2. **スマホの確認**: ページの拡大を止める修正は、本物の iPhone の Safari ではまだ確かめていない（この環境の Chromium では Safari の2本指の拡大を再現できない）。縦向きではボタンが画面に大きく重なる（今は「横向きにすると遊びやすいです」と出すだけ）
 
 ## 環境メモ
 
