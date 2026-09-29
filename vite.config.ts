@@ -28,6 +28,28 @@ function inlineAll(): Plugin {
   };
 }
 
+/**
+ * X などにリンクを貼ったときのカード（OGP）。画像は絶対 URL でないと出ないので、
+ * index.html の %SITE_URL% をビルド時に公開先の URL にする。
+ * 独自ドメインにしたら環境変数 SITE_URL で指定する。Cloudflare Pages のビルドでは
+ * CF_PAGES_URL（https://<ハッシュ>.<プロジェクト>.pages.dev）からプロジェクトの URL を取る。
+ */
+function siteUrl(): string {
+  const { SITE_URL, CF_PAGES_URL } = process.env;
+  if (SITE_URL) return SITE_URL.replace(/\/+$/, '');
+  const pages = CF_PAGES_URL && new URL(CF_PAGES_URL).hostname.match(/[^.]+\.pages\.dev$/);
+  return `https://${pages ? pages[0] : 'gekka-ranbu.pages.dev'}`;
+}
+
+function ogp(): Plugin {
+  const url = siteUrl();
+  return {
+    name: 'ogp',
+    // Vite が HTML の中の URL を読む前に置きかえる
+    transformIndexHtml: { order: 'pre', handler: (html) => html.replaceAll('%SITE_URL%', url) },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   base: './',
   build:
@@ -42,7 +64,7 @@ export default defineConfig(({ mode }) => ({
           rollupOptions: { output: { inlineDynamicImports: true } },
         }
       : { outDir: 'dist', chunkSizeWarningLimit: 1200 },
-  plugins: mode === 'single' ? [inlineAll()] : [],
+  plugins: mode === 'single' ? [ogp(), inlineAll()] : [ogp()],
   test: {
     include: ['tests/**/*.test.ts'],
     environment: 'node',

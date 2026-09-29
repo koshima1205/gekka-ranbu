@@ -138,6 +138,7 @@ Web で公開するときは **1ファイル版（`npm run build:single` → `di
 - Node のバージョンは `.node-version`（22）で指定しています。
 - ビルドのときに月蝕綺譚のモデルを素材蔵から取ってきて、ゲームに埋め込みます（`npm run sync:kitan`）。
 - `public/_headers`（Cloudflare 用）と `index.html` の `robots` で、検索エンジンに載せない設定（noindex）にしています。検索に出したくなったら両方から消してください。
+- X などにリンクを貼ったときのカード（OGP）は `index.html` の `og:` と `twitter:card`、画像は `public/og.jpg`（タイトル画面を 1200×630 で撮ったもの。タイトル画面を大きく変えたら撮り直す）。カードの画像は絶対 URL でないと出ないので、ビルドのときに公開先の URL を入れています（`vite.config.ts` の `ogp`）。Cloudflare Pages のビルドでは自動でプロジェクトの `○○.pages.dev` になり、それ以外では `https://gekka-ranbu.pages.dev` になります。独自ドメインにしたら、Cloudflare の環境変数 `SITE_URL`（例: `https://example.com`）を設定してください。
 - サイトの名前（`○○.pages.dev` やドメイン）に「CNP」を入れない、広告・投げ銭などで収益化しない（[docs/GUIDELINES.md](docs/GUIDELINES.md)）。
 
 ## クレジット・ガイドライン

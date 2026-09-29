@@ -49,6 +49,11 @@ const unlock = () => audio.unlock();
 window.addEventListener('pointerdown', unlock);
 window.addEventListener('keydown', unlock);
 
+// iOS Safari は user-scalable=no が効かず、2本指でページを拡大できてしまう。両手の親指で遊んでいるうちに
+// 拡大されると、ポーズボタンなどが画面の外に出て戻れなくなるので、ページの拡大を止める
+for (const type of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(type, (e) => e.preventDefault());
+document.addEventListener('touchmove', (e) => e.touches.length > 1 && e.preventDefault(), { passive: false });
+
 const input = new InputManager();
 const app = new App(input, ui, touchEl);
 // 月蝕綺譚の公式モデル（GLB）を読み込んでからタイトルへ（読めなかったキャラは仮の形で表示）
